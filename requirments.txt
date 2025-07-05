@@ -1,4 +1,4 @@
 streamlit
-pypdf2
+pypdf
 requests
 python-dotenv
