@@ -1,14 +1,14 @@
 import streamlit as st
-import fitz  # PyMuPDF
+import PyPDF2
 import requests
 import os
 from dotenv import load_dotenv
 
-# Load environment
+# Load .env
 load_dotenv()
 api_key = os.getenv("GROQ_API_KEY")
 
-# Inject minimal CSS for clean theme
+# inject minimal theme CSS
 st.markdown(
     """
     <style>
@@ -110,11 +110,14 @@ def ask_about_document(document_text, question):
         st.error(f"Error answering the question: {e}")
         return "Sorry, I couldn’t answer."
 
-# PDF
+# PDF extraction
 def extract_text(uploaded_file):
     try:
-        with fitz.open(stream=uploaded_file.read(), filetype="pdf") as doc:
-            return "".join(page.get_text() for page in doc)
+        reader = PyPDF2.PdfReader(uploaded_file)
+        text = ""
+        for page in reader.pages:
+            text += page.extract_text() or ""
+        return text
     except Exception as e:
         st.error(f"Error reading the PDF: {e}")
         return ""
