@@ -1,5 +1,5 @@
 import streamlit as st
-import PyPDF2
+import pypdf
 import requests
 import os
 from dotenv import load_dotenv
@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 api_key = os.getenv("GROQ_API_KEY")
 
-# inject minimal theme CSS
+# theme styling
 st.markdown(
     """
     <style>
@@ -53,8 +53,8 @@ def summarize_text(document_text):
                 {
                     "role": "system",
                     "content": (
-                        "You are a professional summarizer. Please produce a concise, clear summary with 5 bullet points, "
-                        "focused on the most relevant points for business users."
+                        "You are a professional summarizer. Provide a concise, clear summary with 5 bullet points "
+                        "focused on the most relevant details for business users."
                     )
                 },
                 {"role": "user", "content": document_text[:6000]}
@@ -83,7 +83,7 @@ def ask_about_document(document_text, question):
         prompt = (
             f"Document:\n{document_text[:6000]}\n\n"
             f"Question: {question}\n\n"
-            "Answer accurately using the document only. If unsure, reply with 'I don't know.'"
+            "Answer accurately using only the document. If unsure, reply 'I don't know.'"
         )
         data = {
             "model": "llama3-8b-8192",
@@ -91,7 +91,7 @@ def ask_about_document(document_text, question):
                 {
                     "role": "system",
                     "content": (
-                        "You are a precise, business-like assistant. Only answer based on the provided document."
+                        "You are a precise, business-style assistant. Only answer using the provided document."
                     )
                 },
                 {"role": "user", "content": prompt}
@@ -113,10 +113,12 @@ def ask_about_document(document_text, question):
 # PDF extraction
 def extract_text(uploaded_file):
     try:
-        reader = PyPDF2.PdfReader(uploaded_file)
+        reader = pypdf.PdfReader(uploaded_file)
         text = ""
         for page in reader.pages:
-            text += page.extract_text() or ""
+            page_text = page.extract_text()
+            if page_text:
+                text += page_text
         return text
     except Exception as e:
         st.error(f"Error reading the PDF: {e}")
@@ -127,7 +129,7 @@ st.set_page_config(page_title="PDF Document Assistant", layout="wide")
 
 st.title("PDF Document Assistant")
 st.write("""
-Upload a PDF document, then select to either get a concise summary or ask questions about its contents.
+Upload a PDF document, then choose to either get a concise summary or ask questions about its contents.
 """)
 
 uploaded_file = st.file_uploader("Upload a PDF", type="pdf")
@@ -170,4 +172,4 @@ if uploaded_file:
                     st.success("Answer:")
                     st.write(answer)
 else:
-    st.info("Please upload a PDF file above to begin.")
+    st.info("Please upload a PDF file above to get started.")
