@@ -1,5 +1,5 @@
 import streamlit as st
-import pypdf
+import PyPDF2
 import requests
 import os
 from dotenv import load_dotenv
@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 api_key = os.getenv("GROQ_API_KEY")
 
-# theme styling
+# Inject minimal styling
 st.markdown(
     """
     <style>
@@ -110,10 +110,10 @@ def ask_about_document(document_text, question):
         st.error(f"Error answering the question: {e}")
         return "Sorry, I couldn’t answer."
 
-# PDF extraction
+# PDF text extraction
 def extract_text(uploaded_file):
     try:
-        reader = pypdf.PdfReader(uploaded_file)
+        reader = PyPDF2.PdfReader(uploaded_file)
         text = ""
         for page in reader.pages:
             page_text = page.extract_text()
@@ -169,7 +169,3 @@ if uploaded_file:
                 else:
                     with st.spinner("Getting answer..."):
                         answer = ask_about_document(document_text, question)
-                    st.success("Answer:")
-                    st.write(answer)
-else:
-    st.info("Please upload a PDF file above to get started.")
